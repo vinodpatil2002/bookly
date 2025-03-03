@@ -10,4 +10,4 @@ async def init_db():
         from src.books.models import Book
 
         await conn.run_sync(SQLModel.metadata.create_all)
-        pass
+        
