@@ -15,6 +15,15 @@ class Book(BaseModel):
     updated_at: datetime
 
 
+class BookCreateModel(BaseModel):
+    title: str
+    author: str
+    publisher: str
+    page_count: int
+    language: str
+    published_date: str
+
+
 class BookUpdateModel(BaseModel):
     title: str
     author: str
