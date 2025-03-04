@@ -1,33 +1,37 @@
-from fastapi import APIRouter, status, HTTPException
+from fastapi import APIRouter, status, HTTPException, Depends
 from typing import List
-from src.books.book_data import books
+from sqlmodel.ext.asyncio.session import AsyncSession
 from src.books.schemas import Book, BookUpdateModel
+from src.db.main import get_session
+from src.books.services import BookService
+from src.books.models import Book
 
 book_router = APIRouter()
+book_service = BookService()
 
 
 # returns all books
 @book_router.get("/", response_model=List[Book])
-async def get_all_books():
+async def get_all_books(session: AsyncSession = Depends(get_session)):
+    books = book_service.get_all_books(session)
     return books
 
 
 # create a book
 @book_router.post("/", status_code=status.HTTP_201_CREATED)
-async def create_a_book(book_data: Book) -> dict:
-    new_book = book_data.model_dump()
-
-    books.book_routerend(new_book)
+async def create_a_book(
+    book_data: Book, session: AsyncSession = Depends(get_session)
+) -> dict:
+    new_book = book_service.create_book(book_data, session)
     return new_book
 
 
 # returns book by id
 @book_router.get("/{book_id}")
-async def get_book(book_id: int) -> dict:
-    for book in books:
-        if book["id"] == book_id:
-            return book
-
+async def get_book(book_id: int, session: AsyncSession = Depends(get_session)) -> dict:
+    book = book_service.get_book(book_id, session)
+    if book:
+        return book
     raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Book not found")
 
 
